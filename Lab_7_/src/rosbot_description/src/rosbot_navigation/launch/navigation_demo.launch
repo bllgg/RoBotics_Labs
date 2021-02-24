@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<launch>
+  <master auto="start"/>
+
+  <arg name="odom_frame_id"   default="odom"/>
+  <arg name="base_frame_id"   default="base_link"/>
+  <arg name="global_frame_id" default="map"/>
+  <arg name="odom_topic" default="odom" />
+  <arg name="laser_topic" default="scan" />
+
+  <node pkg="tf" type="static_transform_publisher" name="odom_to_map" args="0 0 0 0 0 0 /map /odom 100"/>
+
+  <!-- Map server -->
+    <node pkg="octomap_server" type="octomap_server_node" name="octomap_server" output="screen">
+        <param name="resolution" value="0.01" />
+        <param name="frame_id" type="string" value="/odom" />
+        <param name="sensor_model/max_range" value="2.0" />
+        <param name="latch" value="true" />
+
+        <remap from="cloud_in" to="/camera/depth/points" />
+        <remap from="projected_map" to="map" />
+    </node>
+
+  <!-- Move base -->
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <rosparam file="$(find rosbot_navigation)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find rosbot_navigation)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find rosbot_navigation)/config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find rosbot_navigation)/config/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find rosbot_navigation)/config/teb_local_planner.yaml" command="load" />
+    <rosparam file="$(find rosbot_navigation)/config/global_planner_params.yaml" command="load" />
+    <rosparam file="$(find rosbot_navigation)/config/move_base_params.yaml" command="load" />
+
+    <remap from="cmd_vel" to="cmd_vel"/>
+    <remap from="odom" to="odom"/>
+    <remap from="scan" to="/scan"/>
+    <param name="move_base/DWAPlannerROS/yaw_goal_tolerance" value="1.0"/>
+    <param name="move_base/DWAPlannerROS/xy_goal_tolerance" value="1.0"/>
+
+  </node>
+</launch>
