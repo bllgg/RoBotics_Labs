@@ -3,4 +3,5 @@ build/
 devel/
 logs/
 *.mp4
+*.zip
 manipulator/
