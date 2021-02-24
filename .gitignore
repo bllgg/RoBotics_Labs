@@ -2,3 +2,5 @@
 build/
 devel/
 logs/
+*.mp4
+manipulator/
